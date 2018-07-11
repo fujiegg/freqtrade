@@ -1582,6 +1582,7 @@ def test_sell_profit_only_enable_profit(default_conf, limit_buy_order,
     trade.update(limit_buy_order)
     patch_get_signal(mocker, value=(False, True))
     assert freqtrade.handle_trade(trade) is True
+    assert trade.sell_reason == SellType.SELL_SIGNAL.value
 
 
 def test_sell_profit_only_disable_profit(default_conf, limit_buy_order,
@@ -1617,6 +1618,7 @@ def test_sell_profit_only_disable_profit(default_conf, limit_buy_order,
     trade.update(limit_buy_order)
     patch_get_signal(mocker, value=(False, True))
     assert freqtrade.handle_trade(trade) is True
+    assert trade.sell_reason == SellType.SELL_SIGNAL.value
 
 
 def test_sell_profit_only_enable_loss(default_conf, limit_buy_order, fee, markets, mocker) -> None:
@@ -1687,6 +1689,7 @@ def test_sell_profit_only_disable_loss(default_conf, limit_buy_order, fee, marke
     trade.update(limit_buy_order)
     patch_get_signal(mocker, value=(False, True))
     assert freqtrade.handle_trade(trade) is True
+    assert trade.sell_reason == SellType.SELL_SIGNAL.value
 
 
 def test_ignore_roi_if_buy_signal(default_conf, limit_buy_order, fee, markets, mocker) -> None:
@@ -1726,6 +1729,7 @@ def test_ignore_roi_if_buy_signal(default_conf, limit_buy_order, fee, markets, m
     # Test if buy-signal is absent (should sell due to roi = true)
     patch_get_signal(mocker, value=(False, True))
     assert freqtrade.handle_trade(trade) is True
+    assert trade.sell_reason == SellType.ROI.value
 
 
 def test_trailing_stop_loss(default_conf, limit_buy_order, fee, caplog, mocker) -> None:
@@ -1762,6 +1766,7 @@ def test_trailing_stop_loss(default_conf, limit_buy_order, fee, caplog, mocker) 
     assert log_has(
         f'HIT STOP: current price at 0.000001, stop loss is {trade.stop_loss:.6f}, '
         f'initial stop loss was at 0.000010, trade opened at 0.000011', caplog.record_tuples)
+    assert trade.sell_reason == SellType.TRAILING_STOP_LOSS.value
 
 
 def test_trailing_stop_loss_positive(default_conf, limit_buy_order, fee, caplog, mocker) -> None:
@@ -1823,6 +1828,7 @@ def test_trailing_stop_loss_positive(default_conf, limit_buy_order, fee, caplog,
         f'HIT STOP: current price at {buy_price + 0.000002:.6f}, '
         f'stop loss is {trade.stop_loss:.6f}, '
         f'initial stop loss was at 0.000010, trade opened at 0.000011', caplog.record_tuples)
+    assert trade.sell_reason == SellType.TRAILING_STOP_LOSS.value
 
 
 def test_disable_ignore_roi_if_buy_signal(default_conf, limit_buy_order,
@@ -1864,6 +1870,7 @@ def test_disable_ignore_roi_if_buy_signal(default_conf, limit_buy_order,
     # Test if buy-signal is absent
     patch_get_signal(mocker, value=(False, True))
     assert freqtrade.handle_trade(trade) is True
+    assert trade.sell_reason == SellType.STOP_LOSS.value
 
 
 def test_get_real_amount_quote(default_conf, trades_for_order, buy_order_fee, caplog, mocker):
