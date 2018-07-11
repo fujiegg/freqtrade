@@ -16,6 +16,7 @@ import requests
 
 from freqtrade import (DependencyException, OperationalException,
                        TemporaryError, constants)
+from freqtrade.analyze import SellType
 from freqtrade.freqtradebot import FreqtradeBot
 from freqtrade.persistence import Trade
 from freqtrade.rpc import RPCMessageType
@@ -1372,7 +1373,7 @@ def test_execute_sell_up(default_conf, ticker, fee, ticker_sell_up, markets, moc
         get_ticker=ticker_sell_up
     )
 
-    freqtrade.execute_sell(trade=trade, limit=ticker_sell_up()['bid'])
+    freqtrade.execute_sell(trade=trade, limit=ticker_sell_up()['bid'], sellreason=SellType.ROI)
 
     assert rpc_mock.call_count == 2
     last_msg = rpc_mock.call_args_list[-1][0][0]
@@ -1424,7 +1425,8 @@ def test_execute_sell_down(default_conf, ticker, fee, ticker_sell_down, markets,
         get_ticker=ticker_sell_down
     )
 
-    freqtrade.execute_sell(trade=trade, limit=ticker_sell_down()['bid'])
+    freqtrade.execute_sell(trade=trade, limit=ticker_sell_down()['bid'],
+                           sellreason=SellType.STOP_LOSS)
 
     assert rpc_mock.call_count == 2
     last_msg = rpc_mock.call_args_list[-1][0][0]
@@ -1477,7 +1479,7 @@ def test_execute_sell_without_conf_sell_up(default_conf, ticker, fee,
     )
     freqtrade.config = {}
 
-    freqtrade.execute_sell(trade=trade, limit=ticker_sell_up()['bid'])
+    freqtrade.execute_sell(trade=trade, limit=ticker_sell_up()['bid'], sellreason=SellType.ROI)
 
     assert rpc_mock.call_count == 2
     last_msg = rpc_mock.call_args_list[-1][0][0]
@@ -1527,7 +1529,8 @@ def test_execute_sell_without_conf_sell_down(default_conf, ticker, fee,
     )
 
     freqtrade.config = {}
-    freqtrade.execute_sell(trade=trade, limit=ticker_sell_down()['bid'])
+    freqtrade.execute_sell(trade=trade, limit=ticker_sell_down()['bid'],
+                           sellreason=SellType.STOP_LOSS)
 
     assert rpc_mock.call_count == 2
     last_msg = rpc_mock.call_args_list[-1][0][0]
@@ -1623,7 +1626,7 @@ def test_sell_profit_only_enable_loss(default_conf, limit_buy_order, fee, market
     patch_get_signal(mocker)
     patch_RPCManager(mocker)
     patch_coinmarketcap(mocker)
-    mocker.patch('freqtrade.freqtradebot.Analyze.stop_loss_reached', return_value=False)
+    mocker.patch('freqtrade.freqtradebot.Analyze.stop_loss_reached', return_value=(False, None))
     mocker.patch.multiple(
         'freqtrade.exchange.Exchange',
         validate_pairs=MagicMock(),
