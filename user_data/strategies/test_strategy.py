@@ -213,7 +213,8 @@ class TestStrategy(IStrategy):
     def advise_buy(self, dataframe: DataFrame, pair: str) -> DataFrame:
         """
         Based on TA indicators, populates the buy signal for the given dataframe
-        :param dataframe: DataFrame
+        :param dataframe: DataFrame populated with indicators
+        :param pair: Pair currently analyzed
         :return: DataFrame with buy column
         """
         dataframe.loc[
@@ -229,7 +230,8 @@ class TestStrategy(IStrategy):
     def advise_sell(self, dataframe: DataFrame, pair: str) -> DataFrame:
         """
         Based on TA indicators, populates the sell signal for the given dataframe
-        :param dataframe: DataFrame
+        :param dataframe: DataFrame populated with indicators
+        :param pair: Pair currently analyzed
         :return: DataFrame with buy column
         """
         dataframe.loc[
